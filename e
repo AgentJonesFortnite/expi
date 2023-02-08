@@ -1,34 +1,4 @@
---[[
-    Notes: 
 
-    - This script is in early development and can be buggy
-    - Some of this code is old and unoptimized
-    - This is mainly meant for longer teleports, short teleports inside of buldings and what not would be better to be implemented yourself
-    - You have to wait for the current teleport to finish to use it again
-
-    Anticheat Explanation: 
-
-    - Jailbreak has two main movement related security measures: anti teleport and anti noclip
-    - Jailbreaks anti noclip works in a way where not only can you not walk through objects, but you also get flagged if you teleport through them
-    - Due to cars in jailbreak being faster than players, the anti teleport allows you to move a lot faster if youre inside a car
-    - Jailbreaks anti teleport does not flag you for teleporting directly up or directly down
-    - The goal of this script is to combine a few methods to make the fastest possible teleporation method while not triggering any of the security measures
-    
-    Teleportation Steps:
-
-    - Check if the player is under a roof/any object
-    - If the player is under a roof, use pathfinding to get to an area which has no roof above it (to avoid getting flagged by the anti noclip when we try to teleport up)
-    - Once the player is in an area with no roof above it, teleport into the sky (if we move in the sky, we can avoid going into objects and getting flagged by the anti noclip)
-    - Check if the target position is closer than the nearest vehicle, if so, move directly to the target position in the sky and then teleport down to it, if not, continue to next step
-    - Move towards the position of above the nearest vehicle 
-    - Teleport directly downwards to the vehicle and enter it
-    - Teleport the vehicle into the sky 
-    - Move the vehicle to the target position in the sky 
-    - Teleport the vehicle directly downwards to the target position 
-    - Exit the vehicle
-]]
-
---// services
 
 local replicated_storage = game:GetService("ReplicatedStorage");
 local run_service = game:GetService("RunService");
@@ -42,11 +12,11 @@ local player = players.LocalPlayer;
 
 local dependencies = {
     variables = {
-        up_vector = Vector3.new(0, 500, 0),
+        up_vector = Vector3.new(0, 50, 0),
         raycast_params = RaycastParams.new(),
         path = pathfinding_service:CreatePath({WaypointSpacing = 3}),
-        player_speed = 100, 
-        vehicle_speed = 300,
+        player_speed = 50, 
+        vehicle_speed = 150,
         teleporting = false,
         stopVelocity = false
     },
@@ -165,7 +135,7 @@ function movement:move_to_position(part, cframe, speed, car, target_vehicle, tri
         task.wait(0.5);
     end;
     
-    local y_level = 50;
+    local y_level = 25;
     local higher_position = Vector3.new(vector_position.X, y_level, vector_position.Z); -- 500 studs above target position
 
     repeat -- use velocity to move towards the target position
@@ -333,10 +303,7 @@ local function teleport(cframe, tried) -- unoptimized
 
             movement:move_to_position(vehicle_object.Engine, cframe, dependencies.variables.vehicle_speed, true);
 
-            repeat -- attempt to exit car
-                task.wait(0.15);
-                dependencies.modules.character_util.OnJump();
-            until vehicle_object.Seat.PlayerName.Value ~= player.Name;
+          
         end;
     else
         movement:move_to_position(player.Character.HumanoidRootPart, cframe, dependencies.variables.player_speed);
@@ -347,3 +314,4 @@ local function teleport(cframe, tried) -- unoptimized
 end;
 
 return teleport;
+
